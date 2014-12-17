@@ -48,17 +48,23 @@
 
 #include <MeggyJrSimple.h>    // Required code, line 1 of 2.
 
-int rows[8]; // The numbers in this array correspond to the column where the reference point starts
+int rows[8] = {3,6,4,5,4,0,0,0}; // The numbers in this array correspond to the column where the reference point starts
+boolean movingRight[8]; // the values in this array provide the direction each of the rows is moving in.
 
 void setup()                    // run once, when the sketch starts
 {
   MeggyJrSimpleSetup();      // Required code, line 2 of 2.
-  rows[0] = [random(6)+1]; //picks a random column in the array to be between 1-6
+//  rows[0] = [random(6)+1]; //picks a random column in the array to be between 1-6
+  InitRows(); // Just called once. It creates random directions for each row.
 }
 
 void loop()                     // run over and over again
 {
-  
+  DrawArray();
+  DisplaySlate();
+  delay(100);
+  ClearSlate();
+  UpdateArray();
 }
 
 void DrawArray() // This draws three-dot segments and then two-dot segments.
@@ -82,4 +88,61 @@ void DrawArray() // This draws three-dot segments and then two-dot segments.
     }
   }
 }
+
+void UpdateArray()
+{
+  for (int i = 0; i < 8; i++) // This updates the reference points for everything except one case
+  {
+    if (rows[i] > 0) // If there is something in the row
+    {
+      if (rows[i] > 5 && movingRight[i] == true)
+      {
+        movingRight[i] = !movingRight[i]; // flips the direction
+        rows[i] = 5;
+      }
+      else // Here's where we need to adjust for the two- and three-dot segments
+      if (i < 3) // if the index is less than three it's one of the three-dot segments
+      {
+        if (rows[i] < 2 && movingRight[i] == false) // if the VALUE at that index is less than 2 then it's at the edge
+        {
+          movingRight[i] = !movingRight[i]; // flips the direction
+          rows[i] = 2;
+        }
+      else
+      {
+        if (rows[i] < 2 && movingRight[i] == false) // if the VALUE at that index is less than 2 then it's at the edge
+        {
+          movingRight[i] = !movingRight[i]; // flips the direction
+          rows[i] = 2;
+        }
+      }
+      if (movingRight[i] == true)
+        rows[i]++;
+      else
+        rows[i]--;
+      }
+    }
+  }
+  
+  for (int i = 3; i < 8; i++) // Upper rows are two-dot segments
+  {
+    if (rows[i] > 0) // if there is something in the row
+    {
+      DrawPx(rows[i],i,1); // Reference dot
+      DrawPx(rows[i]+1,i,1); // Dot to right
+    }
+  }
+}
+
+void InitRows() // This basically fills the movingRight array with trues and falses
+{               // We'll say false stands for moving left and true stands for moving right.
+  for (int i = 0; i < 8; i++)
+  {
+    if (random(1) == 0) // roll a radnom number
+      movingRight[i] = false; // if it's zero, value is false
+    else
+      movingRight[i] = true; // otherwise value is true
+  }
+}
+
 
